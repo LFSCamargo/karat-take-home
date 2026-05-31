@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+dist
+tmp
+out
+
+# Nx
+.nx
+.nx/cache
+.nx/self-healing
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Test and coverage
+coverage
+*.lcov
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Vite / Vitest caches
+.vite
+vitest.config.ts.timestamp-*
+
+# ESLint
+.eslintcache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor (keep shared workspace settings)
+.idea
+*.swp
+*.swo
+*~

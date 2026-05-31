@@ -1,0 +1,32 @@
+{
+  "name": "stripe-card-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@8.15.4",
+  "scripts": {
+    "serve:web": "nx serve web",
+    "serve:api": "nx serve api",
+    "build": "nx run-many -t build",
+    "test": "nx run-many -t test",
+    "lint": "nx run-many -t lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "latest",
+    "@vitest/eslint-plugin": "^1.6.19",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "nx": "latest",
+    "prettier": "^3.8.3",
+    "tsx": "latest",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.60.0",
+    "vite": "latest",
+    "vitest": "latest"
+  }
+}

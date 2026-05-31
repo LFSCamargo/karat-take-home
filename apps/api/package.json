@@ -1,0 +1,26 @@
+{
+  "name": "@stripe-card-dashboard/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "cors": "latest",
+    "express": "latest",
+    "express-rate-limit": "latest",
+    "helmet": "latest",
+    "kysely": "^0.29.2",
+    "pg": "latest",
+    "stripe": "latest",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/cors": "latest",
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "@types/pg": "latest",
+    "@types/supertest": "latest",
+    "supertest": "latest",
+    "tsx": "latest",
+    "vitest": "latest"
+  }
+}

@@ -1,0 +1,60 @@
+---
+description: Web app conventions for the Stripe card dashboard
+globs: apps/web/**/*
+alwaysApply: false
+---
+
+# Web App
+
+The `apps/web` app is the frontend described in `docs/Frontend.md`.
+
+Use:
+
+1. React
+2. Typescript
+3. Vitest
+4. React Router
+5. Tailwind
+6. shadcn
+7. React Query
+
+# Routes
+
+Implement these routes:
+
+1. `/`
+2. `/dashboard`
+3. `/transactions`
+4. `/transactions/:transactionId`
+5. `/settings`
+
+# Modular Structure
+
+Use feature modules under `apps/web/src/modules`.
+
+Each module should keep its own scoped files:
+
+1. `routes` contains route components and the module route definition file.
+2. `api` contains typed API clients scoped to the module.
+3. `hooks` contains React Query hooks scoped to the module.
+4. `utils` can be added for helpers used only inside that module.
+
+Do not add new route components to a root `routes` folder. Add one route component file and export it through the module route definition.
+
+# Data Flow
+
+Do not call Stripe from the browser. Use the backend API through a typed API client and React Query hooks.
+
+Expected hooks:
+
+1. `useMetricsQuery`
+2. `useSpendBreakdownQuery`
+3. `useRecentTransactionsQuery`
+4. `useTransactionsQuery`
+5. `useTransactionDetailQuery`
+
+# UI Guidance
+
+Use shadcn primitives for cards, tables, badges, skeletons, filters, pagination, sheets, tooltips, charts, and notifications.
+
+Keep loading, empty, and partial error states visible and friendly.

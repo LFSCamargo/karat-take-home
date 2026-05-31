@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "stripe": {
+      "url": "https://mcp.stripe.com"
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    },
+    "tailwind": {
+      "url": "https://mcp.tailwindcss.com"
+    },
+    "vite": {
+      "url": "https://mcp.vitejs.dev"
+    },
+    "vitest": {
+      "url": "https://mcp.vitestjs.dev"
+    },
+    "eslint": {
+      "url": "https://mcp.eslintjs.org"
+    }
+  }
+}

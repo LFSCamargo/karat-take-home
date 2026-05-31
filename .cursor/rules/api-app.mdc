@@ -1,0 +1,55 @@
+---
+description: API app conventions for the Stripe card dashboard
+globs: apps/api/**/*
+alwaysApply: false
+---
+
+# API App
+
+The `apps/api` app is the backend described in `docs/Backend.md`.
+
+Use:
+
+1. NodeJS
+2. Express
+3. Typescript
+4. PostgreSQL
+5. Vitest
+
+# Backend Responsibilities
+
+Implement these core routes:
+
+1. `POST /webhooks/stripe`
+2. `GET /api/metrics`
+3. `GET /api/spend/breakdown`
+4. `GET /api/transactions`
+5. `GET /api/transactions/:id`
+
+# Modular Structure
+
+Use feature modules under `apps/api/src/modules`.
+
+Each module should keep its own scoped files:
+
+1. `handlers` contains endpoint functions such as `getMetricsHandler`.
+2. `routes` contains the module router that maps paths to handlers.
+3. `contracts` contains Zod schemas and inferred types when the module exposes typed data.
+4. `utils` can be added for helpers used only inside that module.
+
+Do not add new endpoints to a global routes file. Add a handler file and wire it through the module router.
+
+# Stripe Guidance
+
+Stripe remains the source of truth. PostgreSQL stores the dashboard read model.
+
+Webhook handling must:
+
+1. Verify the Stripe signature with the raw request body.
+2. Store `stripe_event_id` for idempotency.
+3. Avoid assuming event order.
+4. Return a fast `2xx` after safe persistence.
+
+# Reliability
+
+Include rate limiting, structured logs, basic metrics, and tests for webhook signature validation, duplicate events, dashboard reads, and rate limits.

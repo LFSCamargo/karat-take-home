@@ -1,0 +1,49 @@
+---
+description: Project purpose, monorepo layout, and shared workflow
+alwaysApply: true
+---
+
+# Project Purpose
+
+This project is a Stripe Issuing card activity dashboard for cardholders.
+
+The product goal is simple:
+
+1. Show recent card spend.
+2. Show lightweight metrics.
+3. Show spend breakdown by merchant category.
+4. Keep data reasonably fresh as Stripe webhook activity arrives.
+
+# Monorepo Shape
+
+Use an Nx monorepo managed with pnpm.
+
+Expected apps:
+
+1. `apps/web` contains the React frontend.
+2. `apps/api` contains the NodeJS Express backend.
+
+Both apps should use feature modules under `src/modules`. Keep route files, handlers, API clients, hooks, contracts, and module scoped utilities close to the feature they support.
+
+Prefer shared code only when it removes real duplication. If shared types are needed later, place them in an Nx library such as `libs/shared-types`.
+
+# Project Docs
+
+Use these docs as the source of product and architecture intent:
+
+1. `Challenge.md`
+2. `docs/Backend.md`
+3. `docs/Frontend.md`
+
+# Workflow
+
+Use pnpm commands through Nx when possible.
+
+Examples:
+
+1. `pnpm nx serve web`
+2. `pnpm nx serve api`
+3. `pnpm nx test web`
+4. `pnpm nx test api`
+
+Keep implementation choices aligned with the docs unless the user explicitly changes the plan.
