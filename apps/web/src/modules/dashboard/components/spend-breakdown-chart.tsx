@@ -40,8 +40,8 @@ export function SpendBreakdownChart({
   );
 
   return (
-    <Card className="border-border/70 bg-card/80 backdrop-blur-sm">
-      <CardHeader>
+    <Card className="overflow-hidden rounded-3xl border-border/70 bg-card/80 shadow-sm shadow-primary/5 backdrop-blur-sm">
+      <CardHeader className="border-b border-border/50 bg-gradient-to-r from-secondary/50 to-transparent pb-5">
         <CardTitle>Spend breakdown</CardTitle>
         <CardDescription>
           Category totals for approved card activity.
@@ -65,7 +65,7 @@ export function SpendBreakdownChart({
         ) : null}
 
         {!isLoading && !isError && items.length > 0 ? (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
             <ChartContainer
               className="mx-auto aspect-square max-h-[280px] w-full"
               config={chartConfig}
@@ -91,15 +91,15 @@ export function SpendBreakdownChart({
               </PieChart>
             </ChartContainer>
 
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {items.map((item) => (
                 <li
                   key={item.merchantCategory}
-                  className="flex items-center justify-between gap-3 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-background/50 px-3 py-2 text-sm"
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className="size-2.5 rounded-full"
+                      className="size-2.5 shrink-0 rounded-full shadow-sm"
                       style={{
                         background: `var(--color-${item.merchantCategory})`,
                       }}

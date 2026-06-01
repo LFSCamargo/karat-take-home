@@ -50,7 +50,7 @@ export function TransactionsTable({
 
   if (isLoading && !data) {
     return (
-      <div className="space-y-3 rounded-xl border border-border/70 bg-card/80 p-4">
+      <div className="space-y-3 rounded-3xl border border-border/70 bg-card/80 p-6 shadow-sm shadow-primary/5">
         {Array.from({ length: 8 }).map((_, index) => (
           <Skeleton key={index} className="h-12 w-full" />
         ))}
@@ -60,7 +60,7 @@ export function TransactionsTable({
 
   if (isError) {
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+      <div className="rounded-3xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive shadow-sm">
         Transactions could not be loaded.
       </div>
     );
@@ -68,7 +68,7 @@ export function TransactionsTable({
 
   if (!data || data.items.length === 0) {
     return (
-      <div className="rounded-xl border border-border/70 bg-card/80 p-10 text-center">
+      <div className="rounded-3xl border border-border/70 bg-card/80 p-10 text-center shadow-sm shadow-primary/5">
         <p className="text-lg font-medium">No matching transactions</p>
         <p className="mt-2 text-sm text-muted-foreground">
           Try adjusting your filters or search term.
@@ -78,12 +78,24 @@ export function TransactionsTable({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="overflow-hidden rounded-xl border border-border/70 bg-card/80 backdrop-blur-sm">
-        <Table>
+    <div className="overflow-hidden rounded-3xl border border-border/70 bg-card/80 shadow-sm shadow-primary/5 backdrop-blur-sm">
+      <div className="flex flex-col gap-1 border-b border-border/50 bg-gradient-to-r from-secondary/50 to-transparent px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-semibold tracking-tight">All activity</h2>
+          <p className="text-sm text-muted-foreground">
+            Showing {data.items.length} of {data.total} transactions
+          </p>
+        </div>
+        <p className="text-xs font-medium text-muted-foreground">
+          Page {currentPage} of {totalPages}
+        </p>
+      </div>
+
+      <div>
+        <Table className="min-w-[880px]">
           <TableHeader>
-            <TableRow>
-              <TableHead>Merchant</TableHead>
+            <TableRow className="bg-background/40 hover:bg-background/40">
+              <TableHead className="pl-6">Merchant</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Authorized</TableHead>
@@ -93,10 +105,13 @@ export function TransactionsTable({
           </TableHeader>
           <TableBody>
             {data.items.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell className="font-medium">
+              <TableRow
+                key={transaction.id}
+                className="transition-colors hover:bg-secondary/35"
+              >
+                <TableCell className="pl-6 font-medium">
                   <Link
-                    className="transition-colors hover:text-primary"
+                    className="transition-colors hover:text-primary hover:underline"
                     to={`/transactions/${transaction.id}`}
                   >
                     {transaction.merchantName}
@@ -114,7 +129,7 @@ export function TransactionsTable({
                 <TableCell className="text-muted-foreground">
                   {formatDate(transaction.postedAt)}
                 </TableCell>
-                <TableCell className="text-right font-medium">
+                <TableCell className="pr-6 text-right font-medium">
                   {formatCurrency(transaction.amount, transaction.currency)}
                 </TableCell>
               </TableRow>
@@ -123,12 +138,8 @@ export function TransactionsTable({
         </Table>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {data.items.length} of {data.total} transactions
-        </p>
-
-        <Pagination>
+      <div className="flex justify-end border-t border-border/50 bg-secondary/20 px-6 py-4">
+        <Pagination className="w-auto justify-end">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
