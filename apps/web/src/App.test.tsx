@@ -7,7 +7,8 @@ describe('App', () => {
     render(<App />);
 
     expect(
-      await screen.findByText('Stripe Card Dashboard'),
+      await screen.findByText('Your spending, simplified'),
     ).toBeInTheDocument();
+    expect(await screen.findByText('Alex Rivera')).toBeInTheDocument();
   });
 });

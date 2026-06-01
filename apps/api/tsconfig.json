@@ -3,7 +3,13 @@
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "node",
-    "types": ["node", "vitest"]
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*.ts", "vitest.config.ts"]
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.spec.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.migrate.json" }
+  ]
 }

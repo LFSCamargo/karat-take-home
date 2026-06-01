@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 
 import { sendJson } from '../../../http/send-json';
-import { dashboardMetricsSchema } from '../contracts/dashboard.contract';
+import { dashboardMetricsSchema } from '../contracts/metrics.contract';
 
 export const getMetricsHandler: RequestHandler = (_request, response) => {
   return sendJson(response, dashboardMetricsSchema, {

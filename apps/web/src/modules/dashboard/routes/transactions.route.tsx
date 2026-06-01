@@ -1,57 +1,50 @@
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router';
 
+import { Button } from '@web/components/ui/button';
+
+import {
+  TransactionFilters,
+} from '../components/transaction-filters';
+import { TransactionsTable } from '../components/transactions-table';
+import { useTransactionFilters } from '../hooks/use-transaction-filters';
 import { useTransactionsQuery } from '../hooks/dashboard-queries';
 
 export function TransactionsRoute() {
-  const transactions = useTransactionsQuery();
+  const filters = useTransactionFilters();
+  const transactions = useTransactionsQuery(filters);
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
-      <header>
-        <Link className="text-sm text-slate-500" to="/dashboard">
-          Back to dashboard
-        </Link>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-          Transactions
-        </h1>
-      </header>
+    <main className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10">
+      <section className="space-y-4">
+        <Button asChild className="w-fit" size="sm" variant="ghost">
+          <Link to="/dashboard">
+            <ArrowLeft className="size-4" />
+            Back to dashboard
+          </Link>
+        </Button>
 
-      <section className="overflow-hidden rounded-xl border bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500">
-            <tr>
-              <th className="p-4">Merchant</th>
-              <th className="p-4">Category</th>
-              <th className="p-4">Status</th>
-              <th className="p-4 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.data?.items.length ? (
-              transactions.data.items.map((transaction) => (
-                <tr key={transaction.id} className="border-t">
-                  <td className="p-4">
-                    <Link to={`/transactions/${transaction.id}`}>
-                      {transaction.merchantName}
-                    </Link>
-                  </td>
-                  <td className="p-4">{transaction.merchantCategory}</td>
-                  <td className="p-4">{transaction.status}</td>
-                  <td className="p-4 text-right">
-                    ${transaction.amount.toFixed(2)}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td className="p-4 text-slate-500" colSpan={4}>
-                  No transactions yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <div className="space-y-3">
+          <p className="text-sm font-medium tracking-[0.2em] text-muted-foreground uppercase">
+            Activity feed
+          </p>
+          <h1 className="text-4xl font-semibold tracking-tight">
+            Transactions
+          </h1>
+          <p className="max-w-2xl text-base leading-7 text-muted-foreground">
+            Search, filter, and paginate through card activity for your demo
+            account.
+          </p>
+        </div>
       </section>
+
+      <TransactionFilters />
+
+      <TransactionsTable
+        data={transactions.data}
+        isError={transactions.isError}
+        isLoading={transactions.isLoading}
+      />
     </main>
   );
 }

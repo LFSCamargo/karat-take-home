@@ -1,6 +1,9 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "types": ["node"],
     "noEmit": false,
     "outDir": "../../dist/apps/api",
     "rootDir": "./src",
@@ -8,5 +11,5 @@
     "sourceMap": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts"]
+  "exclude": ["src/**/*.test.ts", "src/db/migrate.ts", "src/db/migrate-runner.ts", "src/db/migrations/**/*.ts", "src/test/**/*.ts"]
 }

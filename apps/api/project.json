@@ -4,6 +4,12 @@
   "sourceRoot": "apps/api/src",
   "projectType": "application",
   "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx watch apps/api/src/main.ts"
+      }
+    },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
@@ -26,7 +32,25 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "eslint apps/api && tsc -p apps/api/tsconfig.app.json --noEmit && tsc -p apps/api/tsconfig.spec.json --noEmit"
+        "command": "eslint apps/api && tsc -p apps/api/tsconfig.app.json --noEmit && tsc -p apps/api/tsconfig.spec.json --noEmit && tsc -p apps/api/tsconfig.node.json --noEmit && tsc -p apps/api/tsconfig.migrate.json --noEmit"
+      }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app_db tsx apps/api/src/db/migrate.ts"
+      }
+    },
+    "migrate:test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app_db_test tsx apps/api/src/db/migrate.ts"
+      }
+    },
+    "migrate:down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx apps/api/src/db/migrate.ts down"
       }
     }
   }

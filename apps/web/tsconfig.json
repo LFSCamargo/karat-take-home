@@ -3,10 +3,16 @@
   "compilerOptions": {
     "types": ["vite/client", "vitest/globals"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
     "vite.config.ts",
     "vitest.config.ts"
+  ],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.spec.json" },
+    { "path": "./tsconfig.node.json" }
   ]
 }

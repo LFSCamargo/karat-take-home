@@ -5,7 +5,7 @@ import { sendJson } from '../../../http/send-json';
 import {
   spendBreakdownItemSchema,
   spendBreakdownQuerySchema,
-} from '../contracts/dashboard.contract';
+} from '../contracts/spend-breakdown.contract';
 
 export const getSpendBreakdownHandler: RequestHandler = (request, response) => {
   spendBreakdownQuerySchema.parse(request.query);

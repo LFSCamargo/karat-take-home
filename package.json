@@ -4,11 +4,16 @@
   "private": true,
   "packageManager": "pnpm@8.15.4",
   "scripts": {
+    "dev": "nx run-many -t dev --projects=web,api --parallel=2",
+    "dev:web": "nx dev web",
+    "dev:api": "nx dev api",
     "serve:web": "nx serve web",
     "serve:api": "nx serve api",
     "build": "nx run-many -t build",
     "test": "nx run-many -t test",
     "lint": "nx run-many -t lint",
+    "migrate": "nx migrate api",
+    "migrate:down": "nx migrate:down api",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

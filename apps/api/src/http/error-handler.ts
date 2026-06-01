@@ -1,7 +1,7 @@
 import type { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
 
-import { errorResponseSchema } from '../modules/dashboard/contracts/dashboard.contract';
+import { errorResponseSchema } from '../modules/dashboard/contracts/error.contract';
 
 export const errorHandler: ErrorRequestHandler = (
   error,

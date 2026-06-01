@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 
-import { errorResponseSchema } from '../../dashboard/contracts/dashboard.contract';
+import { errorResponseSchema } from '../../dashboard/contracts/error.contract';
 import { sendJson } from '../../../http/send-json';
 
 export const postStripeWebhookHandler: RequestHandler = (

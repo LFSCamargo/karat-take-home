@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "migrate": "tsx src/db/migrate.ts",
+    "migrate:down": "tsx src/db/migrate.ts down"
+  },
   "dependencies": {
     "cors": "latest",
     "express": "latest",
