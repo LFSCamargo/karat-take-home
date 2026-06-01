@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Cell, Pie, PieChart } from 'recharts';
 
 import {
@@ -11,25 +12,16 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from '@web/components/ui/chart';
 import { Skeleton } from '@web/components/ui/skeleton';
 
 import type { SpendBreakdownItem } from '../api/api-client';
+import { buildSpendBreakdownChartConfig } from '../utils/chart-colors';
 import {
   formatCategoryLabel,
   formatCurrency,
   formatPercentage,
 } from '../utils/format';
-
-const chartConfig = {
-  restaurants: { label: 'Restaurants', color: 'var(--chart-1)' },
-  travel: { label: 'Travel', color: 'var(--chart-2)' },
-  groceries: { label: 'Groceries', color: 'var(--chart-3)' },
-  fuel: { label: 'Fuel', color: 'var(--chart-4)' },
-  software: { label: 'Software', color: 'var(--chart-5)' },
-  entertainment: { label: 'Entertainment', color: 'var(--chart-1)' },
-} satisfies ChartConfig;
 
 type SpendBreakdownChartProps = {
   isLoading: boolean;
@@ -42,6 +34,11 @@ export function SpendBreakdownChart({
   isError,
   items = [],
 }: SpendBreakdownChartProps) {
+  const chartConfig = useMemo(
+    () => buildSpendBreakdownChartConfig(items),
+    [items],
+  );
+
   return (
     <Card className="border-border/70 bg-card/80 backdrop-blur-sm">
       <CardHeader>
@@ -81,7 +78,8 @@ export function SpendBreakdownChart({
                   nameKey="merchantCategory"
                   innerRadius={70}
                   outerRadius={110}
-                  strokeWidth={4}
+                  stroke="var(--background)"
+                  strokeWidth={3}
                 >
                   {items.map((item) => (
                     <Cell

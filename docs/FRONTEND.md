@@ -334,6 +334,8 @@ Freshness settings should be simple.
 
 Tailwind handles layout, spacing, responsive behavior, and small visual states. shadcn handles accessible primitives and consistent component styling.
 
+Theme support uses `next-themes` with a class-based `.dark` palette defined in `apps/web/src/styles.css`. The header includes a theme toggle (Light / Dark / System). The chosen theme is persisted in `localStorage` under `stripe-card-dashboard-theme`, and `index.html` applies it before React mounts to avoid a flash of the wrong theme.
+
 The layout should be calm and readable:
 
 1. Summary cards at the top.

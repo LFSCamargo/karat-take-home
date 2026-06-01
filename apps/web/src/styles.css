@@ -29,6 +29,7 @@
   --chart-4: oklch(0.76 0.15 75);
   --chart-5: oklch(0.64 0.18 25);
   --radius: 0.9rem;
+  color-scheme: light;
   font-family:
     Inter,
     ui-sans-serif,
@@ -37,6 +38,33 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
+}
+
+.dark {
+  --background: oklch(0.145 0.02 255);
+  --foreground: oklch(0.985 0.002 247);
+  --card: oklch(0.19 0.02 255);
+  --card-foreground: oklch(0.985 0.002 247);
+  --popover: oklch(0.19 0.02 255);
+  --popover-foreground: oklch(0.985 0.002 247);
+  --primary: oklch(0.92 0.01 255);
+  --primary-foreground: oklch(0.2 0.04 255);
+  --secondary: oklch(0.24 0.02 255);
+  --secondary-foreground: oklch(0.985 0.002 247);
+  --muted: oklch(0.24 0.02 255);
+  --muted-foreground: oklch(0.68 0.02 255);
+  --accent: oklch(0.24 0.02 255);
+  --accent-foreground: oklch(0.985 0.002 247);
+  --destructive: oklch(0.65 0.2 25);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.55 0.03 255);
+  --chart-1: oklch(0.62 0.18 255);
+  --chart-2: oklch(0.68 0.14 190);
+  --chart-3: oklch(0.72 0.16 145);
+  --chart-4: oklch(0.76 0.15 75);
+  --chart-5: oklch(0.64 0.18 25);
+  color-scheme: dark;
 }
 
 @theme inline {

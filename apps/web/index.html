@@ -1,9 +1,38 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" suppressHydrationWarning>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stripe Card Dashboard</title>
+    <script>
+      (function () {
+        const storageKey = 'stripe-card-dashboard-theme';
+
+        try {
+          const storedTheme = localStorage.getItem(storageKey);
+          const prefersDark = window.matchMedia(
+            '(prefers-color-scheme: dark)',
+          ).matches;
+          const theme =
+            storedTheme === 'light' ||
+            storedTheme === 'dark' ||
+            storedTheme === 'system'
+              ? storedTheme
+              : 'system';
+          const resolved =
+            theme === 'dark' || (theme === 'system' && prefersDark)
+              ? 'dark'
+              : 'light';
+
+          document.documentElement.classList.toggle(
+            'dark',
+            resolved === 'dark',
+          );
+        } catch (_error) {
+          /* ignore storage errors */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

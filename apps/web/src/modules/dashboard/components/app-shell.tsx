@@ -2,6 +2,7 @@ import { LayoutDashboard, Receipt } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
 
 import { AppLogo } from '@web/components/app-logo';
+import { ThemeToggle } from '@web/components/theme-toggle';
 import { Separator } from '@web/components/ui/separator';
 import { cn } from '@web/lib/utils';
 
@@ -53,7 +54,10 @@ export function AppShell() {
             </nav>
           </div>
 
-          <CardholderSummary />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <CardholderSummary />
+          </div>
         </div>
 
         <div className="border-t border-border/60 px-6 py-2 md:hidden">
