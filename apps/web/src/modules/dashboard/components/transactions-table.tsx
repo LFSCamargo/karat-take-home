@@ -38,7 +38,9 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = data?.page ?? 1;
-  const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
+  const totalPages = data
+    ? Math.max(1, Math.ceil(data.total / data.pageSize))
+    : 1;
 
   function goToPage(page: number) {
     const next = new URLSearchParams(searchParams);

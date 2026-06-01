@@ -37,14 +37,19 @@
     },
     "migrate": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "command": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app_db tsx apps/api/src/db/migrate.ts"
+        "command": "tsx apps/api/src/db/migrate.ts"
       }
     },
     "migrate:test": {
       "executor": "nx:run-commands",
+      "cache": false,
       "options": {
-        "command": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app_db_test tsx apps/api/src/db/migrate.ts"
+        "command": "tsx apps/api/src/db/migrate.ts"
+      },
+      "env": {
+        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/app_db_test"
       }
     },
     "migrate:down": {

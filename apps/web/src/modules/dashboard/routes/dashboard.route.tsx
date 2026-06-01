@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { Button } from '@web/components/ui/button';
-import { Separator } from '@web/components/ui/separator';
 import {
   Tabs,
   TabsContent,
@@ -11,26 +10,30 @@ import {
   TabsTrigger,
 } from '@web/components/ui/tabs';
 
-import { fakeUser } from '../api/mock-data';
+import { DashboardHeroMeta } from '../components/dashboard-hero-meta';
 import { MetricCards } from '../components/metric-cards';
 import { RecentActivityTable } from '../components/recent-activity-table';
 import { SpendBreakdownChart } from '../components/spend-breakdown-chart';
 import {
   dashboardKeys,
+  useCardholderQuery,
   useMetricsQuery,
   useRecentTransactionsQuery,
   useSpendBreakdownQuery,
 } from '../hooks/dashboard-queries';
-import { formatRelativeFreshness } from '../utils/format';
+import { getFirstName } from '../utils/cardholder-display';
 
 export function DashboardRoute() {
   const queryClient = useQueryClient();
+  const cardholder = useCardholderQuery();
   const metrics = useMetricsQuery();
   const spendBreakdown = useSpendBreakdownQuery();
   const recentTransactions = useRecentTransactionsQuery();
+  const firstName = getFirstName(cardholder.data?.displayName);
 
   async function refreshDashboard() {
     await Promise.all([
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.cardholder() }),
       queryClient.invalidateQueries({ queryKey: dashboardKeys.metrics() }),
       queryClient.invalidateQueries({
         queryKey: dashboardKeys.spendBreakdown(),
@@ -55,21 +58,33 @@ export function DashboardRoute() {
                 Your spending, simplified
               </h1>
               <p className="max-w-xl text-base leading-7 text-muted-foreground">
-                Welcome back, {fakeUser.name}. Review recent card activity,
-                lightweight metrics, and merchant category insights in one calm
-                dashboard.
+                {cardholder.isLoading ? (
+                  <>
+                    Welcome back. Review recent card activity, lightweight
+                    metrics, and merchant category insights in one calm
+                    dashboard.
+                  </>
+                ) : (
+                  <>
+                    Welcome back, {firstName}. Review recent card activity,
+                    lightweight metrics, and merchant category insights in one
+                    calm dashboard.
+                  </>
+                )}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <span>{fakeUser.cardBrand} ending in {fakeUser.cardLast4}</span>
-              <Separator className="hidden h-4 sm:block" orientation="vertical" />
-              <span>
-                {formatRelativeFreshness(metrics.data?.latestActivityAt ?? null)}
-              </span>
-            </div>
+            <DashboardHeroMeta
+              cardholder={cardholder.data}
+              isLoading={cardholder.isLoading}
+              latestActivityAt={metrics.data?.latestActivityAt ?? null}
+            />
           </div>
 
-          <Button type="button" variant="outline" onClick={() => void refreshDashboard()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void refreshDashboard()}
+          >
             <RefreshCw className="size-4" />
             Refresh
           </Button>

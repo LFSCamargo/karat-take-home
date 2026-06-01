@@ -13,17 +13,26 @@ import {
 import { Separator } from '@web/components/ui/separator';
 import { Skeleton } from '@web/components/ui/skeleton';
 
-import { fakeUser } from '../api/mock-data';
 import {
   CategoryBadge,
   TransactionStatusBadge,
 } from '../components/transaction-status-badge';
-import { useTransactionDetailQuery } from '../hooks/dashboard-queries';
+import {
+  useCardholderQuery,
+  useTransactionDetailQuery,
+} from '../hooks/dashboard-queries';
+import {
+  formatPrimaryCardLabel,
+  getFirstName,
+} from '../utils/cardholder-display';
 import { formatCurrency, formatDate } from '../utils/format';
 
 export function TransactionDetailRoute() {
   const { transactionId } = useParams();
+  const cardholder = useCardholderQuery();
   const transaction = useTransactionDetailQuery(transactionId ?? '');
+  const displayName = cardholder.data?.displayName ?? 'Cardholder';
+  const cardLabel = formatPrimaryCardLabel(cardholder.data?.primaryCard);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
@@ -65,7 +74,8 @@ export function TransactionDetailRoute() {
 
           {transaction.isError ? (
             <p className="text-sm text-destructive">
-              This transaction could not be found for {fakeUser.name}.
+              This transaction could not be found for{' '}
+              {getFirstName(displayName)}.
             </p>
           ) : null}
 
@@ -82,11 +92,16 @@ export function TransactionDetailRoute() {
               </div>
 
               <dl className="grid gap-4 sm:grid-cols-2">
-                <DetailItem label="Merchant" value={transaction.data.merchantName} />
+                <DetailItem
+                  label="Merchant"
+                  value={transaction.data.merchantName}
+                />
                 <DetailItem
                   label="Category"
                   value={
-                    <CategoryBadge category={transaction.data.merchantCategory} />
+                    <CategoryBadge
+                      category={transaction.data.merchantCategory}
+                    />
                   }
                 />
                 <DetailItem
@@ -112,8 +127,8 @@ export function TransactionDetailRoute() {
               <Separator />
 
               <div className="rounded-xl bg-secondary/30 p-4 text-sm text-muted-foreground">
-                Card ending in {fakeUser.cardLast4} · {fakeUser.cardBrand} ·{' '}
-                {fakeUser.email}
+                {cardLabel ? `${cardLabel} · ` : null}
+                {cardholder.data?.email ?? 'cardholder'}
               </div>
             </>
           ) : null}
@@ -123,13 +138,7 @@ export function TransactionDetailRoute() {
   );
 }
 
-function DetailItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: ReactNode;
-}) {
+function DetailItem({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="rounded-xl border border-border/60 p-4">
       <dt className="text-sm text-muted-foreground">{label}</dt>

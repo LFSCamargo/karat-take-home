@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import type { RequestHandler } from 'express';
 
+import { getDb } from '../db/client';
+import { resolveCardholderDbId } from './cardholder-id';
+
 declare global {
   namespace Express {
     interface Request {
@@ -9,7 +12,7 @@ declare global {
   }
 }
 
-export function resolveCardholderId(request: {
+export function resolveCardholderIdentifier(request: {
   cardholderId?: string;
 }): string | undefined {
   if (request.cardholderId) {
@@ -19,16 +22,24 @@ export function resolveCardholderId(request: {
   return process.env.DEFAULT_CARDHOLDER_ID;
 }
 
-export const cardholderContextMiddleware: RequestHandler = (
+export const cardholderContextMiddleware: RequestHandler = async (
   request,
   _response,
   next,
 ) => {
-  const cardholderId = resolveCardholderId(request);
+  try {
+    const identifier = resolveCardholderIdentifier(request);
+    if (!identifier) {
+      return next();
+    }
 
-  if (cardholderId) {
-    request.cardholderId = cardholderId;
+    const cardholderId = await resolveCardholderDbId(getDb(), identifier);
+    if (cardholderId) {
+      request.cardholderId = cardholderId;
+    }
+
+    return next();
+  } catch (error) {
+    return next(error);
   }
-
-  next();
 };

@@ -12,16 +12,19 @@
   "targetDefaults": {
     "build": {
       "inputs": ["production", "^production"],
-      "cache": true
+      "cache": false
     },
     "test": {
       "inputs": ["default", "^production"],
-      "cache": true
+      "cache": false
     },
     "lint": {
       "inputs": ["default", "^production"],
-      "cache": true
+      "cache": false
     }
+  },
+  "tui": {
+    "enabled": false
   },
   "analytics": false
 }

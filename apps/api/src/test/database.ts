@@ -24,12 +24,18 @@ export async function resetDatabase() {
 
 export type SeedCardholderInput = {
   externalUserId?: string;
+  displayName?: string;
+  email?: string;
+  phoneNumber?: string;
+  status?: string;
+  profileSyncedAt?: Date | string | null;
 };
 
 export type SeedCardInput = {
   cardholderId: string;
   stripeCardId?: string;
   last4?: string;
+  brand?: string;
   status?: string;
 };
 
@@ -54,6 +60,11 @@ export async function seedCardholder(
     .insertInto('cardholders')
     .values({
       external_user_id: input.externalUserId ?? 'test-user',
+      display_name: input.displayName ?? null,
+      email: input.email ?? null,
+      phone_number: input.phoneNumber ?? null,
+      status: input.status ?? null,
+      profile_synced_at: input.profileSyncedAt ?? null,
     })
     .returningAll()
     .executeTakeFirstOrThrow();
@@ -66,6 +77,7 @@ export async function seedCard(db: DatabaseClient, input: SeedCardInput) {
       cardholder_id: input.cardholderId,
       stripe_card_id: input.stripeCardId ?? `card_${crypto.randomUUID()}`,
       last4: input.last4 ?? '4242',
+      brand: input.brand ?? 'Visa',
       status: input.status ?? 'active',
     })
     .returningAll()

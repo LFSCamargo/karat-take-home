@@ -3,9 +3,7 @@ import { Link } from 'react-router';
 
 import { Button } from '@web/components/ui/button';
 
-import {
-  TransactionFilters,
-} from '../components/transaction-filters';
+import { TransactionFilters } from '../components/transaction-filters';
 import { TransactionsTable } from '../components/transactions-table';
 import { useTransactionFilters } from '../hooks/use-transaction-filters';
 import { useTransactionsQuery } from '../hooks/dashboard-queries';

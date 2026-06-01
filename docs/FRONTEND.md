@@ -35,6 +35,21 @@ We could load all dashboard data from one route level loader. That is fine for s
 3. The first version does not include admin views.
 4. The first version does not include complex custom charting beyond the spend breakdown.
 
+## Environment
+
+Both apps read from a single root `.env` file. Copy `.env.example` to `.env` at the repo root.
+
+Frontend variables must use the `VITE_PUBLIC_` prefix so Vite exposes them to the browser:
+
+1. `VITE_PUBLIC_API_URL` — backend base URL, default `http://localhost:3333`.
+2. `VITE_PUBLIC_USE_MOCK_DATA` — when `true`, the dashboard uses local mock data instead of calling the API.
+
+Read these values through `apps/web/src/env.ts`. Do not read `import.meta.env` directly in feature code.
+
+When running with Docker Compose, the web container also reads the root `.env`. Keep `VITE_PUBLIC_API_URL` pointed at `http://localhost:3333` (the host-mapped API port), not the internal Docker service name.
+
+Start the full stack with `docker compose up --build` or `pnpm docker:up`.
+
 ## System Design and Architecture
 
 ### System diagram or flowchart
@@ -225,19 +240,21 @@ Redirects authenticated users to `/dashboard`. If auth is not ready, it shows a 
 
 ### `/dashboard`
 
-Main cardholder landing page. It shows metrics, spend breakdown, recent transactions, freshness text, and a quick link to the full activity feed.
+Main cardholder landing page. It shows metrics, spend breakdown, recent transactions, and a hero section personalized with the signed-in cardholder.
 
 Queries used:
 
-1. `metricsQuery`
-2. `spendBreakdownQuery`
-3. `recentTransactionsQuery`
+1. `useCardholderQuery`
+2. `useMetricsQuery`
+3. `useSpendBreakdownQuery`
+4. `useRecentTransactionsQuery`
 
 Backend endpoints used:
 
-1. `GET /api/metrics`
-2. `GET /api/spend/breakdown`
-3. `GET /api/transactions`
+1. `GET /api/cardholder`
+2. `GET /api/metrics`
+3. `GET /api/spend/breakdown`
+4. `GET /api/transactions`
 
 ### `/transactions`
 
@@ -299,16 +316,19 @@ npx shadcn@latest add @shadcn/card @shadcn/table @shadcn/badge @shadcn/skeleton 
 Use one query key factory so keys stay consistent.
 
 1. `dashboardKeys.metrics()`
-2. `dashboardKeys.spendBreakdown(filters)`
-3. `dashboardKeys.transactions(filters)`
-4. `dashboardKeys.transaction(id)`
+2. `dashboardKeys.cardholder()`
+3. `dashboardKeys.merchantCategories()`
+4. `dashboardKeys.spendBreakdown(filters)`
+5. `dashboardKeys.transactions(filters)`
+6. `dashboardKeys.transaction(id)`
 
 Freshness settings should be simple.
 
 1. Metrics and spend breakdown can be stale after 30 seconds.
-2. Recent transactions can be stale after 15 seconds.
-3. Full transaction pages can keep previous data during pagination.
-4. Detail pages can refetch when the browser window regains focus.
+2. Cardholder profile and merchant categories can be stale after 60 seconds.
+3. Recent transactions can be stale after 15 seconds.
+4. Full transaction pages can keep previous data during pagination.
+5. Detail pages can refetch when the browser window regains focus.
 
 ## Styling
 
@@ -369,6 +389,30 @@ View usage:
 
 1. Metric cards show spend, count, average amount, and freshness.
 2. Tooltip explains when the backend last saw card activity.
+
+### `GET /api/cardholder`
+
+Used by the app shell and dashboard hero to render the signed-in cardholder name, email, and primary card summary.
+
+React Query hook:
+
+1. `useCardholderQuery`
+
+Expected response fields:
+
+1. `displayName`
+2. `email`
+3. `phoneNumber`
+4. `status`
+5. `memberSince`
+6. `primaryCard.last4`
+7. `primaryCard.brand`
+
+View usage:
+
+1. Header shows display name, card brand, and last4.
+2. Footer shows the cardholder email.
+3. Dashboard hero greets the cardholder by first name and shows pill badges for card, status, member since, and data freshness.
 
 ### `GET /api/spend/breakdown`
 

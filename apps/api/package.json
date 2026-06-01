@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "migrate": "tsx src/db/migrate.ts",
-    "migrate:down": "tsx src/db/migrate.ts down"
+    "migrate:down": "tsx src/db/migrate.ts down",
+    "trigger-issuing": "tsx src/scripts/trigger-issuing-transaction.ts"
   },
   "dependencies": {
     "cors": "latest",

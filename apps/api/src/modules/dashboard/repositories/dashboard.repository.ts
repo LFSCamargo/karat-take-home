@@ -1,4 +1,4 @@
-import { type Kysely } from 'kysely';
+import { sql, type Kysely } from 'kysely';
 
 import type { Database } from '../../../db/schema';
 import type { DashboardMetrics } from '../contracts/metrics.contract';
@@ -9,7 +9,6 @@ import type {
 import {
   activityTimestampExpression,
   APPROVED_TRANSACTION_STATUS,
-  centsToAmount,
   toIsoString,
 } from '../utils/dashboard-sql';
 
@@ -40,35 +39,34 @@ export async function getMetrics(
     return emptyMetrics();
   }
 
-  const approvedMetrics = await db
+  const metrics = await db
     .selectFrom('transactions')
     .where('transactions.cardholder_id', '=', cardholderId)
-    .where('transactions.status', '=', APPROVED_TRANSACTION_STATUS)
-    .select((eb) => [
-      eb.fn.sum<number>('transactions.amount').as('total_amount'),
-      eb.fn.countAll<number>().as('transaction_count'),
-      eb.fn.max('transactions.currency').as('currency'),
+    .select([
+      sql<number>`coalesce(sum(transactions.amount) filter (where transactions.status = ${APPROVED_TRANSACTION_STATUS}), 0)::numeric / 100`.as(
+        'total_spend',
+      ),
+      sql<number>`count(*) filter (where transactions.status = ${APPROVED_TRANSACTION_STATUS})`.as(
+        'transaction_count',
+      ),
+      sql<number>`coalesce(avg(transactions.amount) filter (where transactions.status = ${APPROVED_TRANSACTION_STATUS}), 0)::numeric / 100`.as(
+        'average_transaction_amount',
+      ),
+      sql<string>`max(transactions.currency) filter (where transactions.status = ${APPROVED_TRANSACTION_STATUS})`.as(
+        'currency',
+      ),
+      sql<Date | null>`max(${activityTimestampExpression()})`.as(
+        'latest_activity_at',
+      ),
     ])
     .executeTakeFirst();
 
-  const latestActivity = await db
-    .selectFrom('transactions')
-    .where('transactions.cardholder_id', '=', cardholderId)
-    .select((eb) =>
-      eb.fn.max(activityTimestampExpression()).as('latest_activity_at'),
-    )
-    .executeTakeFirst();
-
-  const transactionCount = Number(approvedMetrics?.transaction_count ?? 0);
-  const totalSpend = centsToAmount(approvedMetrics?.total_amount);
-
   return {
-    totalSpend,
-    transactionCount,
-    averageTransactionAmount:
-      transactionCount > 0 ? totalSpend / transactionCount : 0,
-    latestActivityAt: toIsoString(latestActivity?.latest_activity_at ?? null),
-    currency: approvedMetrics?.currency ?? 'usd',
+    totalSpend: Number(metrics?.total_spend ?? 0),
+    transactionCount: Number(metrics?.transaction_count ?? 0),
+    averageTransactionAmount: Number(metrics?.average_transaction_amount ?? 0),
+    latestActivityAt: toIsoString(metrics?.latest_activity_at ?? null),
+    currency: metrics?.currency ?? 'usd',
   };
 }
 
@@ -81,45 +79,48 @@ export async function getSpendBreakdown(
     return [];
   }
 
-  let breakdownQuery = db
-    .selectFrom('transactions')
-    .where('transactions.cardholder_id', '=', cardholderId)
-    .where('transactions.status', '=', APPROVED_TRANSACTION_STATUS);
+  const rows = await sql<{
+    merchant_category: string;
+    currency: string;
+    amount: string;
+    percentage: string;
+  }>`
+    with category_totals as (
+      select
+        merchant_category,
+        currency,
+        sum(amount) as total_amount_cents
+      from transactions
+      where cardholder_id = ${cardholderId}
+        and status = ${APPROVED_TRANSACTION_STATUS}
+        ${
+          query.from
+            ? sql`and coalesce(posted_at, authorized_at) >= ${new Date(query.from)}`
+            : sql``
+        }
+        ${
+          query.to
+            ? sql`and coalesce(posted_at, authorized_at) <= ${new Date(query.to)}`
+            : sql``
+        }
+      group by merchant_category, currency
+    )
+    select
+      merchant_category,
+      currency,
+      total_amount_cents::numeric / 100 as amount,
+      case
+        when sum(total_amount_cents) over () = 0 then 0
+        else (total_amount_cents::numeric / sum(total_amount_cents) over ()) * 100
+      end as percentage
+    from category_totals
+    order by total_amount_cents desc
+  `.execute(db);
 
-  if (query.from) {
-    breakdownQuery = breakdownQuery.where(
-      activityTimestampExpression(),
-      '>=',
-      new Date(query.from),
-    );
-  }
-
-  if (query.to) {
-    breakdownQuery = breakdownQuery.where(
-      activityTimestampExpression(),
-      '<=',
-      new Date(query.to),
-    );
-  }
-
-  const rows = await breakdownQuery
-    .select(['transactions.merchant_category', 'transactions.currency'])
-    .select((eb) => eb.fn.sum<number>('transactions.amount').as('total_amount'))
-    .groupBy(['transactions.merchant_category', 'transactions.currency'])
-    .orderBy('total_amount', 'desc')
-    .execute();
-
-  const items = rows.map((row) => ({
+  return rows.rows.map((row) => ({
     merchantCategory: row.merchant_category,
-    amount: centsToAmount(row.total_amount),
+    amount: Number(row.amount),
     currency: row.currency,
-    percentage: 0,
-  }));
-
-  const grandTotal = items.reduce((sum, item) => sum + item.amount, 0);
-
-  return items.map((item) => ({
-    ...item,
-    percentage: grandTotal > 0 ? (item.amount / grandTotal) * 100 : 0,
+    percentage: Number(row.percentage),
   }));
 }

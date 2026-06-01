@@ -6,7 +6,9 @@ function toIsoString(value: Date | string | null): string | null {
     return null;
   }
 
-  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+  return value instanceof Date
+    ? value.toISOString()
+    : new Date(value).toISOString();
 }
 
 export function mapTransactionRecord(record: TransactionRecord): Transaction {

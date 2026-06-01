@@ -13,10 +13,7 @@ import {
   TooltipTrigger,
 } from '@web/components/ui/tooltip';
 
-import {
-  formatCurrency,
-  formatRelativeFreshness,
-} from '../utils/format';
+import { formatCurrency, formatRelativeFreshness } from '../utils/format';
 
 type MetricCardsProps = {
   isLoading: boolean;

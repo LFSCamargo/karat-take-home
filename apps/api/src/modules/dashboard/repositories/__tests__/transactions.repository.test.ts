@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
-  getTransactionById,
-  listTransactions,
-} from '../modules/dashboard/repositories/transactions.repository';
-import {
   resetDatabase,
   seedDashboardFixtures,
-} from '../test/database';
+} from '../../../../test/database';
+import {
+  getTransactionById,
+  listTransactions,
+} from '../transactions.repository';
 
 describe('transactions repository integration', () => {
   beforeEach(async () => {
@@ -16,7 +16,7 @@ describe('transactions repository integration', () => {
 
   it('lists transactions for a cardholder ordered by latest activity', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const result = await listTransactions(getDb(), fixtures.cardholder.id, {
       page: 1,
@@ -36,7 +36,7 @@ describe('transactions repository integration', () => {
 
   it('filters by merchant name, categories, statuses, and date range', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const result = await listTransactions(getDb(), fixtures.cardholder.id, {
       page: 1,
@@ -54,7 +54,7 @@ describe('transactions repository integration', () => {
 
   it('paginates transaction results', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const pageOne = await listTransactions(getDb(), fixtures.cardholder.id, {
       page: 1,
@@ -77,7 +77,7 @@ describe('transactions repository integration', () => {
 
   it('returns one transaction scoped to the cardholder', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const transaction = await getTransactionById(
       getDb(),
@@ -99,7 +99,7 @@ describe('transactions repository integration', () => {
 
   it('returns null for invalid transaction ids without querying postgres', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const transaction = await getTransactionById(
       getDb(),
@@ -112,7 +112,7 @@ describe('transactions repository integration', () => {
 
   it('returns null when the transaction belongs to another cardholder', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const transaction = await getTransactionById(
       getDb(),

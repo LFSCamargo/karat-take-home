@@ -11,5 +11,12 @@
     "sourceMap": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts", "src/db/migrate.ts", "src/db/migrate-runner.ts", "src/db/migrations/**/*.ts", "src/test/**/*.ts"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/db/migrate.ts",
+    "src/db/migrate-runner.ts",
+    "src/db/migrations/**/*.ts",
+    "src/scripts/**/*.ts",
+    "src/test/**/*.ts"
+  ]
 }

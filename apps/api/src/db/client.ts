@@ -7,7 +7,8 @@ import type { Database } from './schema';
 let database: Kysely<Database> | undefined;
 
 export function createDatabase(connectionString?: string) {
-  const url = connectionString ?? process.env.DATABASE_URL ?? getAppDatabaseUrl();
+  const url =
+    connectionString ?? process.env.DATABASE_URL ?? getAppDatabaseUrl();
 
   if (!url) {
     throw new Error('DATABASE_URL is required');

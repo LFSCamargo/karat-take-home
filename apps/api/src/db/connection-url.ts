@@ -15,7 +15,5 @@ export function getAppDatabaseUrl(): string {
 }
 
 export function getTestDatabaseUrl(): string {
-  return (
-    process.env.TEST_DATABASE_URL ?? buildDatabaseUrl(TEST_DATABASE_NAME)
-  );
+  return process.env.TEST_DATABASE_URL ?? buildDatabaseUrl(TEST_DATABASE_NAME);
 }

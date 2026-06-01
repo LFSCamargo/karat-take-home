@@ -171,8 +171,13 @@ Include updated_at so the frontend can show freshness
 
 1. `id`
 2. `external_user_id`
-3. `created_at`
-4. `updated_at`
+3. `display_name`
+4. `email`
+5. `phone_number`
+6. `status`
+7. `profile_synced_at`
+8. `created_at`
+9. `updated_at`
 
 `cards`
 
@@ -180,9 +185,10 @@ Include updated_at so the frontend can show freshness
 2. `cardholder_id`
 3. `stripe_card_id`
 4. `last4`
-5. `status`
-6. `created_at`
-7. `updated_at`
+5. `brand`
+6. `status`
+7. `created_at`
+8. `updated_at`
 
 `transactions`
 
@@ -317,11 +323,76 @@ The first version can run in one region near the PostgreSQL database. Multi regi
 
 For a later version, the backend can run in multiple regions while keeping one primary database writer.
 
+## Environment
+
+Both apps read from a single root `.env` file. Copy `.env.example` to `.env` at the repo root.
+
+Backend variables:
+
+1. `PORT` — API listen port, default `3333`.
+2. `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD` — used to build database URLs when `DATABASE_URL` is not set.
+3. `DATABASE_URL` — PostgreSQL connection for the app database (`app_db`).
+4. `TEST_DATABASE_URL` — PostgreSQL connection for Vitest (`app_db_test`).
+5. `DEFAULT_CARDHOLDER_ID` — local development cardholder context only.
+6. `STRIPE_SECRET_KEY` — Stripe SDK secret key.
+7. `STRIPE_WEBHOOK_SECRET` — webhook signing secret from Stripe CLI or Dashboard.
+
+The API loads `.env` on startup through `apps/api/src/config/env.ts`.
+
+### Docker Compose
+
+Run the database, API, and web app together:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Or use `pnpm docker:up`.
+
+Services:
+
+1. `db` — PostgreSQL with `app_db` and `app_db_test` from `db/init.sql`.
+2. `api` — runs migrations, then `nodemon --legacy-watch` with `tsx` on port `3333`.
+3. `web` — runs `pnpm nx dev web` on port `4200` with Vite polling and HMR configured for Docker bind mounts.
+
+Both `api` and `web` use the root `.env` via `env_file`. Compose sets `DOCKER_DEV=true` so file watching uses polling (reliable on macOS Docker Desktop). Keep `VITE_PUBLIC_API_URL=http://localhost:3333` so the browser reaches the published API port.
+
 ## API Endpoints
 
 ### `POST /webhooks/stripe`
 
-Receives Stripe Issuing webhook events. The route verifies the Stripe signature using the raw request body, stores the event id, updates transactions or authorizations, refreshes aggregates, and returns `200 OK` after the event is safely stored.
+Receives Stripe Issuing webhook events. The route verifies the Stripe signature using the raw request body, stores the event id, updates transactions or authorizations, and returns `200 OK` after the event is safely stored.
+
+Requirements:
+
+1. Use the raw request body for signature verification. JSON parsing happens only after Stripe validates the payload.
+2. Read the signing secret from `STRIPE_WEBHOOK_SECRET`.
+3. Reject invalid signatures with HTTP `400`.
+4. Apply webhook rate limiting at 600 requests per minute.
+
+Supported event types:
+
+1. `issuing_authorization.created`
+2. `issuing_authorization.updated`
+3. `issuing_transaction.created`
+4. `issuing_transaction.updated`
+
+Processing rules:
+
+1. Store `stripe_event_id` in `stripe_events` with a unique constraint.
+2. Ignore duplicate Stripe events after they are marked processed.
+3. Upsert authorizations by `stripe_authorization_id`.
+4. Upsert transactions by `stripe_transaction_id`.
+5. Create cardholders from Stripe cardholder ids using `external_user_id`.
+6. Create cards from Stripe card ids using `stripe_card_id`.
+7. Perform all writes for one event inside a single PostgreSQL transaction.
+8. Unknown event types are acknowledged without changing dashboard tables.
+
+Environment variables:
+
+1. `STRIPE_WEBHOOK_SECRET`
+2. `STRIPE_SECRET_KEY` for Stripe SDK initialization and test signature generation
 
 ### `GET /api/metrics`
 
@@ -330,9 +401,34 @@ Returns total spend, transaction count, average transaction amount, and latest a
 Aggregation rules:
 
 1. `totalSpend`, `transactionCount`, and `averageTransactionAmount` include only transactions with status `approved`.
-2. Amounts are stored in cents in PostgreSQL and returned as decimal currency units in the API response.
-3. `latestActivityAt` uses the most recent `coalesce(posted_at, authorized_at)` across all transactions for the cardholder, regardless of status.
-4. `currency` comes from the cardholder's approved transactions. The first version assumes one primary currency per cardholder.
+2. Aggregates are computed in PostgreSQL using filtered `sum`, `count`, and `avg` expressions.
+3. Amounts are stored in cents in PostgreSQL and converted to decimal currency units in SQL before returning the API response.
+4. `latestActivityAt` uses the most recent `coalesce(posted_at, authorized_at)` across all transactions for the cardholder, regardless of status.
+5. `currency` comes from the cardholder's approved transactions. The first version assumes one primary currency per cardholder.
+
+### `GET /api/cardholder`
+
+Returns the authenticated cardholder profile for the app shell.
+
+Behavior:
+
+1. Reads cached profile fields from `cardholders` and the most recently updated card from `cards`.
+2. When `profile_synced_at` is missing or older than one hour, refreshes profile data from Stripe Issuing using `external_user_id` (`ich_...`).
+3. Stores refreshed fields in PostgreSQL (`display_name`, `email`, `phone_number`, `status`, card `last4`, card `brand`).
+4. Returns `404` when cardholder context is missing or the local cardholder row does not exist.
+
+Response fields:
+
+1. `id`
+2. `stripeCardholderId`
+3. `displayName`
+4. `email`
+5. `phoneNumber`
+6. `status`
+7. `memberSince`
+8. `primaryCard.last4`
+9. `primaryCard.brand`
+10. `primaryCard.status`
 
 ### `GET /api/spend/breakdown`
 
@@ -342,9 +438,9 @@ Aggregation rules:
 
 1. Only transactions with status `approved` are included.
 2. Optional `from` and `to` filter on `coalesce(posted_at, authorized_at)`.
-3. Results are grouped by `merchantCategory`, sorted by amount descending.
+3. Category totals, percentages, and sorting are computed in PostgreSQL using grouped sums and window functions.
 4. Each item includes `amount`, `currency`, and `percentage` of the filtered total spend.
-5. Amounts are returned as decimal currency units.
+5. Amounts are stored in cents in PostgreSQL and converted to decimal currency units in SQL before returning the API response.
 
 ### `GET /api/transactions`
 

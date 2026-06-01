@@ -11,7 +11,7 @@ When you add or change behavior, finish with tests and a clean quality check.
 
 Add or update tests for the code you touched. Do not leave new behavior untested.
 
-1. **API** (`apps/api`): Vitest in `src/__tests__/` or colocated `*.test.ts`.
+1. **API** (`apps/api`): Vitest in colocated `__tests__/` folders under each feature module.
    - Handlers, repositories, and filters need coverage for success, validation, and edge cases.
    - Use `apps/api/src/test/database.ts` helpers for DB integration tests against `app_db_test`.
    - Prefer real integration tests over mocks when Postgres is available.

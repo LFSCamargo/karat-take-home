@@ -1,7 +1,6 @@
-version: '3.0'
 services:
   db:
-    image: postgres:latest
+    image: postgres:17
     ports:
       - '5432:5432'
     environment:
@@ -10,3 +9,53 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      CI: 'true'
+      DOCKER_DEV: 'true'
+      POSTGRES_HOST: db
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/app_db
+      TEST_DATABASE_URL: postgresql://postgres:postgres@db:5432/app_db_test
+    ports:
+      - '${PORT:-3333}:${PORT:-3333}'
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh scripts/docker-api-entrypoint.sh
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      CI: 'true'
+      DOCKER_DEV: 'true'
+      CHOKIDAR_USEPOLLING: 'true'
+      VITE_DEV_API_PROXY: http://api:3333
+    ports:
+      - '4200:4200'
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      - api
+    command: sh -c "CI=true pnpm install --frozen-lockfile && pnpm nx dev web"
+
+volumes:
+  node_modules:

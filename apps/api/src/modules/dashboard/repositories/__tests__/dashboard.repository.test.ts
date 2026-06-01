@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
-  getMetrics,
-  getSpendBreakdown,
-} from '../modules/dashboard/repositories/dashboard.repository';
-import { resetDatabase, seedDashboardFixtures } from '../test/database';
+  resetDatabase,
+  seedDashboardFixtures,
+} from '../../../../test/database';
+import { getMetrics, getSpendBreakdown } from '../dashboard.repository';
 
 describe('dashboard repository integration', () => {
   beforeEach(async () => {
@@ -13,7 +13,7 @@ describe('dashboard repository integration', () => {
 
   it('calculates metrics from approved transactions for a cardholder', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const metrics = await getMetrics(getDb(), fixtures.cardholder.id);
 
@@ -27,7 +27,7 @@ describe('dashboard repository integration', () => {
   });
 
   it('returns empty metrics for an invalid cardholder id', async () => {
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const metrics = await getMetrics(getDb(), 'not-a-uuid');
 
@@ -42,7 +42,7 @@ describe('dashboard repository integration', () => {
 
   it('groups approved spend by merchant category with percentages', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const breakdown = await getSpendBreakdown(
       getDb(),
@@ -50,25 +50,24 @@ describe('dashboard repository integration', () => {
       {},
     );
 
-    expect(breakdown).toEqual([
-      {
-        merchantCategory: 'travel',
-        amount: 312,
-        currency: 'usd',
-        percentage: (312 / 396.5) * 100,
-      },
-      {
-        merchantCategory: 'restaurants',
-        amount: 84.5,
-        currency: 'usd',
-        percentage: (84.5 / 396.5) * 100,
-      },
-    ]);
+    expect(breakdown).toHaveLength(2);
+    expect(breakdown[0]).toEqual({
+      merchantCategory: 'travel',
+      amount: 312,
+      currency: 'usd',
+      percentage: (312 / 396.5) * 100,
+    });
+    expect(breakdown[1]).toMatchObject({
+      merchantCategory: 'restaurants',
+      amount: 84.5,
+      currency: 'usd',
+    });
+    expect(breakdown[1]?.percentage).toBeCloseTo((84.5 / 396.5) * 100, 10);
   });
 
   it('filters spend breakdown by activity date range', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const breakdown = await getSpendBreakdown(getDb(), fixtures.cardholder.id, {
       from: '2026-05-30T00:00:00.000Z',
@@ -87,7 +86,7 @@ describe('dashboard repository integration', () => {
 
   it('does not include another cardholder spend in metrics or breakdown', async () => {
     const fixtures = await seedDashboardFixtures();
-    const { getDb } = await import('../db/client');
+    const { getDb } = await import('../../../../db/client');
 
     const metrics = await getMetrics(
       getDb(),

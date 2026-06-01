@@ -1,13 +1,12 @@
 import { Search, X } from 'lucide-react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { Button } from '@web/components/ui/button';
 import { Input } from '@web/components/ui/input';
 
-import {
-  merchantCategories,
-  transactionStatuses,
-} from '../api/mock-data';
+import { transactionStatuses } from '../api/mock-data';
+import { useMerchantCategoriesQuery } from '../hooks/dashboard-queries';
 import { formatCategoryLabel } from '../utils/format';
 import { MultiSelectFilter } from './multi-select-filter';
 
@@ -39,6 +38,12 @@ function FilterField({
 
 export function TransactionFilters() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const merchantCategoriesQuery = useMerchantCategoriesQuery();
+
+  const merchantCategoryOptions = useMemo(
+    () => merchantCategoriesQuery.data?.items.map((item) => item.value) ?? [],
+    [merchantCategoriesQuery.data?.items],
+  );
 
   const merchant = searchParams.get('merchant') ?? '';
   const selectedCategories = searchParams.getAll('merchantCategory');
@@ -97,7 +102,7 @@ export function TransactionFilters() {
         emptyLabel="All categories"
         formatOption={formatCategoryLabel}
         label="Category"
-        options={merchantCategories}
+        options={merchantCategoryOptions}
         selected={selectedCategories}
         onChange={(values) => updateMultiParam('merchantCategory', values)}
       />

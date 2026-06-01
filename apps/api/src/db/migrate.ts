@@ -1,5 +1,6 @@
 import { getAppDatabaseUrl } from './connection-url';
 import { runMigrations } from './migrate-runner';
+import '../config/env.js';
 
 async function run() {
   const direction = process.argv[2] === 'down' ? 'down' : 'latest';

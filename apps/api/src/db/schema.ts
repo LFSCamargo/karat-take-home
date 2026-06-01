@@ -11,6 +11,11 @@ type Timestamp = ColumnType<Date, Date | string | undefined, Date | string>;
 export interface CardholdersTable {
   id: Generated<string>;
   external_user_id: string;
+  display_name: string | null;
+  email: string | null;
+  phone_number: string | null;
+  status: string | null;
+  profile_synced_at: Timestamp | null;
   created_at: Timestamp;
   updated_at: Timestamp;
 }
@@ -20,6 +25,7 @@ export interface CardsTable {
   cardholder_id: string;
   stripe_card_id: string;
   last4: string;
+  brand: string | null;
   status: string;
   created_at: Timestamp;
   updated_at: Timestamp;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toStringArray } from '../modules/dashboard/utils/query-array';
+import { toStringArray } from '../query-array';
 
 describe('toStringArray', () => {
   it('returns an empty array for undefined values', () => {

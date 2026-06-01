@@ -8,6 +8,8 @@ import { dashboardApi } from '../api/api-client';
 
 export const dashboardKeys = {
   metrics: () => ['dashboard', 'metrics'] as const,
+  cardholder: () => ['dashboard', 'cardholder'] as const,
+  merchantCategories: () => ['dashboard', 'merchant-categories'] as const,
   spendBreakdown: (filters: SpendBreakdownQuery = {}) =>
     ['dashboard', 'spend-breakdown', filters] as const,
   transactions: (filters: TransactionListQuery = { page: 1, pageSize: 20 }) =>
@@ -23,6 +25,22 @@ export function useMetricsQuery() {
   });
 }
 
+export function useCardholderQuery() {
+  return useQuery({
+    queryKey: dashboardKeys.cardholder(),
+    queryFn: dashboardApi.cardholder,
+    staleTime: 60_000,
+  });
+}
+
+export function useMerchantCategoriesQuery() {
+  return useQuery({
+    queryKey: dashboardKeys.merchantCategories(),
+    queryFn: dashboardApi.merchantCategories,
+    staleTime: 60_000,
+  });
+}
+
 export function useSpendBreakdownQuery(filters: SpendBreakdownQuery = {}) {
   return useQuery({
     queryKey: dashboardKeys.spendBreakdown(filters),
@@ -34,8 +52,7 @@ export function useSpendBreakdownQuery(filters: SpendBreakdownQuery = {}) {
 export function useRecentTransactionsQuery() {
   return useQuery({
     queryKey: dashboardKeys.transactions({ page: 1, pageSize: 5 }),
-    queryFn: () =>
-      dashboardApi.transactions({ page: 1, pageSize: 5 }),
+    queryFn: () => dashboardApi.transactions({ page: 1, pageSize: 5 }),
     staleTime: 15_000,
   });
 }

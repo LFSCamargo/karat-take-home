@@ -185,7 +185,12 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createIndex('spend_category_totals_cardholder_period_category_unique')
     .on('spend_category_totals')
-    .columns(['cardholder_id', 'merchant_category', 'period_start', 'period_end'])
+    .columns([
+      'cardholder_id',
+      'merchant_category',
+      'period_start',
+      'period_end',
+    ])
     .unique()
     .execute();
 

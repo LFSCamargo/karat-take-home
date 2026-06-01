@@ -12,10 +12,13 @@
     "build": "nx run-many -t build",
     "test": "nx run-many -t test",
     "lint": "nx run-many -t lint",
-    "migrate": "nx migrate api",
-    "migrate:down": "nx migrate:down api",
+    "migrate": "nx run api:migrate",
+    "migrate:down": "nx run api:migrate:down",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "stripe:trigger": "pnpm --filter @stripe-card-dashboard/api trigger-issuing"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -31,6 +34,8 @@
     "tsx": "latest",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.60.0",
+    "dotenv": "latest",
+    "nodemon": "latest",
     "vite": "latest",
     "vitest": "latest"
   }

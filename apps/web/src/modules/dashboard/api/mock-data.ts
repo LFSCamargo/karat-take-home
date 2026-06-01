@@ -2,7 +2,7 @@ import type {
   DashboardMetrics,
   SpendBreakdownItem,
   Transaction,
-} from './api-client';
+} from './types';
 
 export const fakeUser = {
   name: 'Alex Rivera',
@@ -116,7 +116,7 @@ export const mockTransactions: Transaction[] = [
     id: 'txn_10',
     amount: 37.2,
     currency: 'usd',
-    merchantName: 'Trader Joe\'s',
+    merchantName: "Trader Joe's",
     merchantCategory: 'groceries',
     status: 'approved',
     authorizedAt: daysAgo(9, 17),
@@ -165,7 +165,10 @@ function buildSpendBreakdown(): SpendBreakdownItem[] {
     );
   }
 
-  const grandTotal = [...totals.values()].reduce((sum, amount) => sum + amount, 0);
+  const grandTotal = [...totals.values()].reduce(
+    (sum, amount) => sum + amount,
+    0,
+  );
 
   return [...totals.entries()]
     .map(([merchantCategory, amount]) => ({
