@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "types": ["node"],
+    "composite": true
+  },
+  "include": ["src/db/migrate.ts", "src/db/migrate-runner.ts", "src/db/migrations/**/*.ts", "src/db/client.ts", "src/db/schema.ts", "src/db/connection-url.ts"]
+}

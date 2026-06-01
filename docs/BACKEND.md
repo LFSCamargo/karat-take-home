@@ -327,17 +327,52 @@ Receives Stripe Issuing webhook events. The route verifies the Stripe signature 
 
 Returns total spend, transaction count, average transaction amount, and latest activity timestamp for the authenticated cardholder.
 
+Aggregation rules:
+
+1. `totalSpend`, `transactionCount`, and `averageTransactionAmount` include only transactions with status `approved`.
+2. Amounts are stored in cents in PostgreSQL and returned as decimal currency units in the API response.
+3. `latestActivityAt` uses the most recent `coalesce(posted_at, authorized_at)` across all transactions for the cardholder, regardless of status.
+4. `currency` comes from the cardholder's approved transactions. The first version assumes one primary currency per cardholder.
+
 ### `GET /api/spend/breakdown`
 
 Returns spend grouped by merchant category for the authenticated cardholder. The endpoint accepts optional `from` and `to` query parameters.
 
+Aggregation rules:
+
+1. Only transactions with status `approved` are included.
+2. Optional `from` and `to` filter on `coalesce(posted_at, authorized_at)`.
+3. Results are grouped by `merchantCategory`, sorted by amount descending.
+4. Each item includes `amount`, `currency`, and `percentage` of the filtered total spend.
+5. Amounts are returned as decimal currency units.
+
 ### `GET /api/transactions`
 
-Returns paginated card activity for the authenticated cardholder. The response includes amount, currency, merchant, category, status, and transaction time.
+Returns paginated card activity for the authenticated cardholder.
+
+Supported query params:
+
+1. `page` — page number, default `1`.
+2. `pageSize` — page size, default `20`, max `100`.
+3. `merchant` — optional case-insensitive partial match on merchant name.
+4. `merchantCategory` — optional repeatable param for one or more merchant categories. Example: `?merchantCategory=restaurants&merchantCategory=travel`.
+5. `status` — optional repeatable param for one or more transaction statuses. Example: `?status=approved&status=pending`.
+6. `from` — optional ISO timestamp lower bound on activity time.
+7. `to` — optional ISO timestamp upper bound on activity time.
 
 ### `GET /api/transactions/:id`
 
-Returns one transaction if it belongs to the authenticated cardholder.
+Returns one transaction when it belongs to the authenticated cardholder.
+
+Path params:
+
+1. `id` — transaction uuid.
+
+Behavior:
+
+1. Cardholder context is resolved server-side. Clients must not pass a cardholder id in headers or query params.
+2. Returns `404` when the transaction does not exist, does not belong to the authenticated cardholder, or the id is invalid.
+3. Uses the same transaction response shape as items in `GET /api/transactions`.
 
 ## Rollout Plan
 

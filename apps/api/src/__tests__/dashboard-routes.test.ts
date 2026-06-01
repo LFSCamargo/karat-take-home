@@ -1,18 +1,26 @@
 import request from 'supertest';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { createApp } from '../app';
 import {
-  resetDatabase,
-  seedDashboardFixtures,
-} from '../test/database';
+  clearDefaultCardholderId,
+  setDefaultCardholderId,
+} from '../test/cardholder-context';
+import { resetDatabase, seedDashboardFixtures } from '../test/database';
 
 describe('dashboard routes', () => {
   beforeEach(async () => {
+    clearDefaultCardholderId();
     await resetDatabase();
   });
 
-  it('returns typed dashboard metrics', async () => {
+  afterEach(() => {
+    clearDefaultCardholderId();
+  });
+
+  it('returns empty metrics when cardholder context is missing', async () => {
+    await seedDashboardFixtures();
+
     const response = await request(createApp()).get('/api/metrics');
 
     expect(response.status).toBe(200);
@@ -47,23 +55,116 @@ describe('dashboard routes', () => {
       total: 0,
     });
   });
+
+  it('ignores x-cardholder-id request headers', async () => {
+    const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
+
+    const response = await request(createApp())
+      .get('/api/metrics')
+      .set('x-cardholder-id', '00000000-0000-0000-0000-000000000099');
+
+    expect(response.status).toBe(200);
+    expect(response.body.totalSpend).toBe(396.5);
+  });
+});
+
+describe('dashboard metrics and spend routes integration', () => {
+  beforeEach(async () => {
+    clearDefaultCardholderId();
+    await resetDatabase();
+  });
+
+  afterEach(() => {
+    clearDefaultCardholderId();
+  });
+
+  it('returns metrics for the authenticated cardholder', async () => {
+    const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
+
+    const response = await request(createApp()).get('/api/metrics');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      totalSpend: 396.5,
+      transactionCount: 2,
+      averageTransactionAmount: 198.25,
+      latestActivityAt: '2026-05-31T09:00:00.000Z',
+      currency: 'usd',
+    });
+  });
+
+  it('returns spend breakdown grouped by merchant category', async () => {
+    const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
+
+    const response = await request(createApp()).get('/api/spend/breakdown');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(2);
+    expect(response.body[0]).toMatchObject({
+      merchantCategory: 'travel',
+      amount: 312,
+      currency: 'usd',
+    });
+    expect(response.body[1]).toMatchObject({
+      merchantCategory: 'restaurants',
+      amount: 84.5,
+      currency: 'usd',
+    });
+  });
+
+  it('filters spend breakdown by date range', async () => {
+    const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
+
+    const response = await request(createApp())
+      .get('/api/spend/breakdown')
+      .query({
+        from: '2026-05-30T00:00:00.000Z',
+        to: '2026-05-30T23:59:59.999Z',
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([
+      {
+        merchantCategory: 'travel',
+        amount: 312,
+        currency: 'usd',
+        percentage: 100,
+      },
+    ]);
+  });
+
+  it('returns empty spend breakdown when cardholder context is missing', async () => {
+    await seedDashboardFixtures();
+
+    const response = await request(createApp()).get('/api/spend/breakdown');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([]);
+  });
 });
 
 describe('dashboard transaction routes integration', () => {
   beforeEach(async () => {
+    clearDefaultCardholderId();
     await resetDatabase();
+  });
+
+  afterEach(() => {
+    clearDefaultCardholderId();
   });
 
   it('returns paginated transactions for the authenticated cardholder', async () => {
     const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
 
-    const response = await request(createApp())
-      .get('/api/transactions')
-      .set('x-cardholder-id', fixtures.cardholder.id)
-      .query({
-        page: 1,
-        pageSize: 8,
-      });
+    const response = await request(createApp()).get('/api/transactions').query({
+      page: 1,
+      pageSize: 8,
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.total).toBe(4);
@@ -73,10 +174,10 @@ describe('dashboard transaction routes integration', () => {
 
   it('filters transactions by merchant, category, status, and date range', async () => {
     const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
 
     const response = await request(createApp())
       .get('/api/transactions')
-      .set('x-cardholder-id', fixtures.cardholder.id)
       .query({
         page: 1,
         pageSize: 8,
@@ -94,10 +195,9 @@ describe('dashboard transaction routes integration', () => {
 
   it('does not return transactions from another cardholder', async () => {
     const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
 
-    const response = await request(createApp())
-      .get('/api/transactions')
-      .set('x-cardholder-id', fixtures.cardholder.id);
+    const response = await request(createApp()).get('/api/transactions');
 
     expect(response.status).toBe(200);
     expect(
@@ -110,24 +210,25 @@ describe('dashboard transaction routes integration', () => {
 
   it('returns 404 when transaction detail is missing', async () => {
     const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
 
-    const response = await request(createApp())
-      .get('/api/transactions/550e8400-e29b-41d4-a716-446655440000')
-      .set('x-cardholder-id', fixtures.cardholder.id);
+    const response = await request(createApp()).get(
+      '/api/transactions/550e8400-e29b-41d4-a716-446655440000',
+    );
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({
-      message:
-        'Transaction 550e8400-e29b-41d4-a716-446655440000 was not found',
+      message: 'Transaction 550e8400-e29b-41d4-a716-446655440000 was not found',
     });
   });
 
   it('returns one transaction for the authenticated cardholder', async () => {
     const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId(fixtures.cardholder.id);
 
-    const response = await request(createApp())
-      .get(`/api/transactions/${fixtures.transactions.blueBottle.id}`)
-      .set('x-cardholder-id', fixtures.cardholder.id);
+    const response = await request(createApp()).get(
+      `/api/transactions/${fixtures.transactions.blueBottle.id}`,
+    );
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -144,10 +245,11 @@ describe('dashboard transaction routes integration', () => {
 
   it('returns 404 when transaction belongs to another cardholder', async () => {
     const fixtures = await seedDashboardFixtures();
+    setDefaultCardholderId('00000000-0000-0000-0000-000000000099');
 
-    const response = await request(createApp())
-      .get(`/api/transactions/${fixtures.transactions.blueBottle.id}`)
-      .set('x-cardholder-id', '00000000-0000-0000-0000-000000000099');
+    const response = await request(createApp()).get(
+      `/api/transactions/${fixtures.transactions.blueBottle.id}`,
+    );
 
     expect(response.status).toBe(404);
   });

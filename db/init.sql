@@ -1,0 +1,2 @@
+CREATE DATABASE app_db;
+CREATE DATABASE app_db_test;

@@ -1,0 +1,75 @@
+---
+description: Require tests, design doc updates, and passing lint, test, and format checks before finishing work
+alwaysApply: true
+---
+
+# Quality Gates
+
+When you add or change behavior, finish with tests and a clean quality check.
+
+## Tests Are Required
+
+Add or update tests for the code you touched. Do not leave new behavior untested.
+
+1. **API** (`apps/api`): Vitest in `src/__tests__/` or colocated `*.test.ts`.
+   - Handlers, repositories, and filters need coverage for success, validation, and edge cases.
+   - Use `apps/api/src/test/database.ts` helpers for DB integration tests against `app_db_test`.
+   - Prefer real integration tests over mocks when Postgres is available.
+2. **Web** (`apps/web`): Vitest in `src/**/*.test.ts(x)`.
+   - Cover hooks, API clients, and route behavior affected by your change.
+3. Skip tests only when the user explicitly asks, or the change is docs-only with no runtime impact.
+
+## Design Docs Must Stay Current
+
+When you implement or materially change behavior, update the matching design doc in the same change.
+
+1. **Backend/API** (`apps/api`): update `docs/BACKEND.md`.
+   - Endpoints, request/response shapes, filters, auth/cardholder scoping, DB schema, webhook behavior, rate limits, and test/database setup.
+2. **Frontend/Web** (`apps/web`): update `docs/FRONTEND.md`.
+   - Routes, UI flows, filters, API client/hook usage, loading/empty/error states, and user-visible behavior.
+3. If a feature spans both apps, update both docs and keep API contracts aligned across them.
+4. Skip doc updates only for refactors, test-only changes, or fixes that do not change intended behavior.
+
+Use `Challenge.md` only when product scope changes, not for routine implementation details.
+
+## Verification Before Done
+
+Run the affected project checks and fix failures before finishing. Do not report work as complete if checks fail.
+
+**Scoped to what changed:**
+
+```bash
+pnpm nx lint api
+pnpm nx test api
+pnpm nx lint web
+pnpm nx test web
+```
+
+**Or run everything:**
+
+```bash
+pnpm lint
+pnpm test
+pnpm format:check
+```
+
+If formatting fails, run `pnpm format` on changed files, then re-run `pnpm format:check`.
+
+## API Test Database
+
+API integration tests use `app_db_test` (see `db/init.sql`). Before API tests:
+
+1. Postgres must be running: `docker compose up -d db`
+2. Test DB is migrated automatically by Vitest global setup.
+
+Override with `TEST_DATABASE_URL` when needed.
+
+## Definition Of Done
+
+1. Tests added or updated for changed behavior.
+2. Design docs updated when backend and/or frontend behavior changed.
+3. `pnpm nx lint <project>` passes for each touched app.
+4. `pnpm nx test <project>` passes for each touched app.
+5. `pnpm format:check` passes (or formatting was applied and rechecked).
+
+If a check cannot run (missing Docker, env, etc.), say what failed, why, and what the user must do.
